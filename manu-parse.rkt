@@ -87,16 +87,16 @@
 
 
 
-(define myp
+(define parse
   (lambda (s)
-    (let-values (((res remain) (fun-lisp2 (scan s))))
+    (let-values (((res remain) (parse-lisp2 (scan s))))
                 res)))
 
-(define fun-lisp2
+(define parse-lisp2
   (lambda (toks)
     (cond ((null? toks) (values #f #f))
           ((open? (first toks))
-           (let-values (((child remain) (p-child (cdr toks) '())))
+           (let-values (((child remain) (parse-child (cdr toks) '())))
                        (cond
                         ((null? remain) (error "missing close paren"))
                         ;; ((not (null? (cdr remain))) (error "find trailing exprs"))
@@ -105,17 +105,17 @@
                                       remain)))))
           (else (error "must begin with paren")))))
 
-(define p-child
+(define parse-child
   (lambda (remain res)
     (cond
      ((null? remain) (values (reverse res) remain))
      ((open? (first remain))
-      (let-values (((res1 remain1) (fun-lisp2 remain)))
-                  (p-child remain1 (cons res1 res))))
+      (let-values (((res1 remain1) (parse-lisp2 remain)))
+                  (parse-child remain1 (cons res1 res))))
      ((close? (first remain))
       (values (reverse res) remain))
      (else
-      (p-child (cdr remain) (cons (car remain) res))))))
+      (parse-child (cdr remain) (cons (car remain) res))))))
 
 (define open?
   (lambda (node)
